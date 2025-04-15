@@ -510,10 +510,11 @@ do
             Position = UDim2.new(0, 208, 0, 25);
             Size = UDim2.new(0, 15, 0, 200);
             ZIndex = 17;
-            Parent = ColorPicker;
+            Parent = PickerFrameInner;
         });
 
         local HueSelectorInner = Library:Create('Frame', {
+            BackgroundColor3 = Color3.new(1, 1, 1);
             BorderSizePixel = 0;
             Size = UDim2.new(1, 0, 1, 0);
             ZIndex = 18;
@@ -534,7 +535,7 @@ do
             Position = UDim2.fromOffset(4, 228),
             Size = UDim2.new(0.5, -6, 0, 20),
             ZIndex = 18,
-            Parent = ColorPicker;
+            Parent = PickerFrameInner;
         });
 
         local HueBoxInner = Library:Create('Frame', {
@@ -576,7 +577,7 @@ do
         local RgbBoxBase = Library:Create(HueBoxOuter:Clone(), {
             Position = UDim2.new(0.5, 2, 0, 228),
             Size = UDim2.new(0.5, -6, 0, 20),
-            Parent = ColorPicker;
+            Parent = PickerFrameInner
         });
 
         local RgbBox = Library:Create(RgbBoxBase.Frame:FindFirstChild('TextBox'), {
@@ -593,7 +594,7 @@ do
                 Position = UDim2.fromOffset(4, 251);
                 Size = UDim2.new(1, -8, 0, 15);
                 ZIndex = 19;
-                Parent = ColorPicker;
+                Parent = PickerFrameInner;
             });
 
             TransparencyBoxInner = Library:Create('Frame', {
@@ -633,7 +634,7 @@ do
             Text = ColorPicker.Title,--Info.Default;
             TextWrapped = false;
             ZIndex = 16;
-            Parent = ColorPicker;
+            Parent = PickerFrameInner;
         });
 
 
@@ -808,13 +809,27 @@ do
         end)
 
         function ColorPicker:Display()
-            ColorPicker.Container.Visible = true;
-            ColorPicker.SatVibMap.ImageColor3 = Color3.fromHSV(ColorPicker.Hue, 1, 1);
-            HueSelectorInner.BackgroundColor3 = Color3.fromHSV(ColorPicker.Hue, 1, 1);
-            HueSelectorInner.BackgroundTransparency = ColorPicker.Transparency;
-            TransparencyBoxInner.BackgroundColor3 = Color3.fromHSV(ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib);
-            TransparencyBoxInner.BackgroundTransparency = 0;
+            ColorPicker.Value = Color3.fromHSV(ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib);
+            SatVibMap.BackgroundColor3 = Color3.fromHSV(ColorPicker.Hue, 1, 1);
+
+            Library:Create(DisplayFrame, {
+                BackgroundColor3 = ColorPicker.Value;
+                BackgroundTransparency = ColorPicker.Transparency;
+                BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
+            });
+
+            if TransparencyBoxInner then
+                TransparencyBoxInner.BackgroundColor3 = ColorPicker.Value;
+                TransparencyCursor.Position = UDim2.new(1 - ColorPicker.Transparency, 0, 0, 0);
+            end;
+
             HueCursor.Position = UDim2.new(0, 0, ColorPicker.Hue, 0);
+
+            HueBox.Text = '#' .. ColorPicker.Value:ToHex()
+            RgbBox.Text = table.concat({ math.floor(ColorPicker.Value.R * 255), math.floor(ColorPicker.Value.G * 255), math.floor(ColorPicker.Value.B * 255) }, ', ')
+
+            Library:SafeCallback(ColorPicker.Callback, ColorPicker.Value);
+            Library:SafeCallback(ColorPicker.Changed, ColorPicker.Value);
         end;
 
         function ColorPicker:OnChanged(Func)
